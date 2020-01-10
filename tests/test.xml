@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<root>
+    <an_option>true</an_option>
+    <a_null2/>
+    <main>
+<!--
+        <jpeg_quality unit="percent">96</jpeg_quality>
+-->
+        <jpeg_quality>96</jpeg_quality>
+        <sync_dates_to_filesystem>true</sync_dates_to_filesystem>
+        <work_in_place>false</work_in_place>
+    </main>
+    <rotate>
+        <resample>BICUBIC</resample>
+    </rotate>
+    <sort>
+        <template>x y z</template>
+        <specific>
+            <name>BoatyMcBoatface</name>
+        </specific>
+    </sort>
+</root>

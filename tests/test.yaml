@@ -1,0 +1,13 @@
+an_option: true
+a_null: null
+
+main:
+    jpeg_quality: 96
+    sync_dates_to_filesystem: true
+    work_in_place: false
+
+rotate:
+    resample: BICUBIC
+
+sort:
+    template: x y z
