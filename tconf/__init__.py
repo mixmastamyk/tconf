@@ -165,7 +165,6 @@ class TurtleConfig:
 
     def _coerce_string(self, attr_name, value, type_):
         ''' Convert a string value to the expected type. '''
-        #~ assert isinstance(value, str)
         if isinstance(type_, dict):  # retrieve from argparse kwargs
             type_ = type_.get('type')
 
@@ -270,7 +269,7 @@ class TurtleArgumentParser(ArgumentParser):
     ''' An ArgumentParser that is automatically populated by TurtleConfig.
 
         Arguments:
-            turtle:     a TurtleConfig object.
+            app_defaults:  a (class, module, object) containing data.
             help_templ: a string such as: '🐢 {description} ({type_str})'
     '''
     def __init__(self, app_defaults, *args, help_templ=None, **kwargs):
@@ -280,22 +279,22 @@ class TurtleArgumentParser(ArgumentParser):
             help_templ = '🐢 {description} ({type_str})'
 
         # look over default object and configure argument details:
-        for key, val, annotation in self._get_arguments(app_defaults):
+        for key, value, annotation in self._get_arguments(app_defaults):
 
-            log.debug('TurtleArgumentParser arg: %r', (key, val, annotation))
+            log.debug('TurtleArgumentParser arg: %r', (key, value, annotation))
             params = {}
             if type(annotation) is dict:
                 description = annotation.pop('desc', '')
-                type_ = annotation.pop('type', val.__class__)
+                type_ = annotation.pop('type', value.__class__)
                 params = annotation  # pass rest to parser.add_argument()
             else:
-                type_, description = val.__class__, ''
+                type_, description = value.__class__, ''
             type_str = type_.__name__ if hasattr(type_, '__name__') else str(type_)
 
-            if val is False:
+            if value is False:
                 params['action'] = 'store_true'
                 type_str = 'False, sets True'
-            elif val is True:
+            elif value is True:
                 params['action'] = 'store_false'
                 type_str = 'True, sets False'
             else:
@@ -325,19 +324,19 @@ class TurtleArgumentParser(ArgumentParser):
         if prefix:
             prefix = prefix + '-'
 
-        for key, val in vars(obj).items():
+        for key, value in vars(obj).items():
             if key.startswith('_'):
                 continue
 
             annotation = annos.get(key)
             arg_name = prefix + key.replace('_', '-')
 
-            if isinstance(val, type):  # class, follow container
-                arg_list.extend(self._get_arguments(val, prefix=arg_name))
+            if isinstance(value, type):  # class, follow container
+                arg_list.extend(self._get_arguments(value, prefix=arg_name))
             else:
                 if annotation:
-                    arg_list.append( (arg_name, val, annotation) )
+                    arg_list.append( (arg_name, value, annotation) )
                 else:  # None, fall back to type of value
-                    arg_list.append( (arg_name, val, type(val)) )
+                    arg_list.append( (arg_name, value, type(value)) )
 
         return arg_list
