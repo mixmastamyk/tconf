@@ -78,13 +78,13 @@ class TurtleConfig:
         '''
         if attr_name in self._values_cache:
             return self._values_cache[attr_name]
-        result = None
+        value = None
         log.debug('🐢.get(%r)', attr_name)
 
         # find value
         for source in self._sources:  # find the value
-            result = getattr(source, attr_name)
-            if result is not None:
+            value = getattr(source, attr_name)
+            if value is not None:
                 break  # found something
         else:  # not broken, not found
             raise AttributeError('%r not found.' % attr_name)
@@ -94,31 +94,31 @@ class TurtleConfig:
         if ('.' not in attr_name
             and isinstance(source, adapters.ConfigParserAdapter)
             and source._def_sect
-            and not isinstance(result, adapters._AttributeDict)):
+            and not isinstance(value, adapters._AttributeDict)):
                 attr_name = source._def_sect + '.' + attr_name
 
-        # potentially convert then type check result
+        # potentially convert then type check value
         dest_type = self._types_cache.get(attr_name)
-        if isinstance(result, str) and dest_type is not str:
+        if isinstance(value, str) and dest_type is not str:
             # strings may or may not need type coercion
-            result = self._coerce_string(attr_name, result, dest_type)
+            value = self._coerce_string(attr_name, value, dest_type)
 
-        elif isinstance(result, adapters.ObjectAdapter):
-            return result  # needed for attr iface :-/
+        elif isinstance(value, adapters.ObjectAdapter):
+            return value  # needed for attr iface :-/
 
-        if isinstance(result, adapters._AttributeDict):  # very inefficient,
+        if isinstance(value, adapters._AttributeDict):  # very inefficient,
             # checks/converts whole section to support the attr iface :-/
-            for key, val in result.items():  # every one !
+            for key, val in value.items():  # every one !
                 key_name = attr_name + '.' + key
                 dest_type = self._types_cache.get(key_name)
                 if isinstance(val, str) and dest_type is not str:
-                    result[key] = self._coerce_string(key_name, val, dest_type)
-                check_type(key_name, result[key], dest_type)
+                    value[key] = self._coerce_string(key_name, val, dest_type)
+                check_type(key_name, value[key], dest_type)
         else: # everything else
-            check_type(attr_name, result, dest_type)
+            check_type(attr_name, value, dest_type)
 
-        self._values_cache[attr_name] = result
-        return result
+        self._values_cache[attr_name] = value
+        return value
 
     def __getitem__(self, attr_path):
         ''' Dictionary style interface: cfg['foo.bar.baz'].
