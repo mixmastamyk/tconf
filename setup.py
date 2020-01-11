@@ -16,7 +16,6 @@ tests_require = ()  # ('pyflakes', 'readme_renderer'),
 extras_require = dict(
     yaml=('strictyaml',),
     xml=('xmltodict',),
-    #~ toml=('toml',),
 )
 
 def slurp(filename):

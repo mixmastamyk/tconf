@@ -9,10 +9,9 @@ except ImportError:
     from collections import Sequence
 
 from tconf import TurtleConfig
-
 import config as AppDefaults
 
-import sys, out  # this script requires the out package
+import sys, out  # this script needs the out package
 out.configure(level='debug' if '-d' in sys.argv else 'info')
 
 
