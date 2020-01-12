@@ -1,9 +1,6 @@
 '''
     | tconf - TurtleConfig - It's turtles all the way down…
     | © 2020, Mike Miller - Released under the LGPL, version 3+.
-
-    TODO:
-        - dedup annotation code in argparser
 '''
 import logging
 import os
@@ -66,7 +63,8 @@ class TurtleConfig:
         # find the defaults object, likely bringing up the rear:
         for obj in reversed(self._sources):
             if isinstance(obj, adapters.ObjectAdapter):
-                self._types_cache = self._load_types(obj._source)  # get types
+                self._types_cache = { prop[0]: prop[2]
+                                      for prop in _list_object_props(obj._source)}
                 break  # -en Sie
         else: # no break, aka not found
             raise DefaultsMissingError(DefaultsMissingError.__doc__)
@@ -190,32 +188,6 @@ class TurtleConfig:
 
         return value
 
-    def _load_types(self, obj, prefix=''):
-        ''' Investigate annotations and values, then return a list of
-            arguments to create.
-        '''
-        type_cache = {}
-        annos = get_type_hints(obj)
-        if prefix:
-            prefix = prefix + '.'
-
-        for key, val in vars(obj).items():
-            if key.startswith('_'):  # skip
-                continue
-
-            annotation = annos.get(key)
-            arg_name = prefix + key
-
-            if isinstance(val, type):  # class, follow container recursively
-                type_cache.update(self._load_types(val, prefix=arg_name))
-            else:
-                if annotation:
-                    type_cache[arg_name] = annotation
-                else:  # None, fall back to type of value
-                    type_cache[arg_name] = type(val)
-
-        return type_cache
-
     def _handle_path(self, path_str, ensure_paths=False):
         ''' Render an absolute path with folders from appdirs,
             and optionally ensure file exists.
@@ -279,7 +251,8 @@ class TurtleArgumentParser(ArgumentParser):
             help_templ = '🐢 {description} ({type_str})'
 
         # look over default object and configure argument details:
-        for key, value, annotation in self._get_arguments(app_defaults):
+        #~ for key, value, annotation in self._get_arguments(app_defaults):
+        for key, value, annotation in _list_object_props(app_defaults, mod_name=1):
 
             log.debug('TurtleArgumentParser arg: %r', (key, value, annotation))
             params = {}
@@ -317,26 +290,39 @@ class TurtleArgumentParser(ArgumentParser):
                 **params,
             )
 
-    def _get_arguments(self, obj, prefix=''):
-        ''' Investigate annotations, return a list of arguments to create. '''
-        annos = get_type_hints(obj)
-        arg_list = []
-        if prefix:
+
+def _list_object_props(container, prefix='', mod_name=False):
+    ''' Inspect object property annotations and types, return a list.
+
+        Arguments:
+            container:  the object to inspect
+            prefix:     keeps track of where we are in tree
+            mod_name:   use argparse style names instead of obect notation.
+    '''
+    annos = get_type_hints(container)
+    arg_list = []
+    if prefix:
+        if mod_name:
             prefix = prefix + '-'
+        else:
+            prefix = prefix + '.'
 
-        for key, value in vars(obj).items():
-            if key.startswith('_'):
-                continue
+    for key, value in vars(container).items():
+        if key.startswith('_'):
+            continue
 
-            annotation = annos.get(key)
+        annotation = annos.get(key)
+        if mod_name:
             arg_name = prefix + key.replace('_', '-')
+        else:
+            arg_name = prefix + key
 
-            if isinstance(value, type):  # class, follow container
-                arg_list.extend(self._get_arguments(value, prefix=arg_name))
-            else:
-                if annotation:
-                    arg_list.append( (arg_name, value, annotation) )
-                else:  # None, fall back to type of value
-                    arg_list.append( (arg_name, value, type(value)) )
+        if isinstance(value, type):  # class, follow container
+            arg_list.extend(_list_object_props(value, prefix=arg_name))
+        else:
+            if annotation:
+                arg_list.append( (arg_name, value, annotation) )
+            else:  # None, fall back to type of value
+                arg_list.append( (arg_name, value, type(value)) )
 
-        return arg_list
+    return arg_list
