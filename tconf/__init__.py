@@ -63,8 +63,8 @@ class TurtleConfig:
         # find the defaults object, likely bringing up the rear:
         for obj in reversed(self._sources):
             if isinstance(obj, adapters.ObjectAdapter):
-                self._types_cache = { prop[0]: prop[2]
-                                      for prop in _list_object_props(obj._source)}
+                self._types_cache = { p[0]: p[2]  # dump value
+                                      for p in _list_object_props(obj._source) }
                 break  # -en Sie
         else: # no break, aka not found
             raise DefaultsMissingError(DefaultsMissingError.__doc__)
@@ -251,7 +251,6 @@ class TurtleArgumentParser(ArgumentParser):
             help_templ = '🐢 {description} ({type_str})'
 
         # look over default object and configure argument details:
-        #~ for key, value, annotation in self._get_arguments(app_defaults):
         for key, value, annotation in _list_object_props(app_defaults, mod_name=1):
 
             log.debug('TurtleArgumentParser arg: %r', (key, value, annotation))
