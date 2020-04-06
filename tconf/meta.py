@@ -15,7 +15,6 @@ __author__      = authors = ', '.join([
                             ])
 copyright       = '© 2019-%s' % _localtime().tm_year
 description     = "It's turtles all the way down…"
-email           = 'mixmastamyk@github.com'
 license         = 'LGPLv3'
 keywords        = 'configuration cascade cascading ini conf yaml xml environment'
 
@@ -26,6 +25,7 @@ repo_provider   = 'github.com'
 #~ repo_provider   = 'bitbucket.org'
 repo_url        = 'https://%s/%s/%s' % (repo_provider, repo_account, repo_name)
 project_urls    = {'Repository': repo_url, 'Issues': repo_url + '/issues'}
+email           = 'mixmastamyk@%s' % repo_provider
 
 trove_classifiers = [
     'Development Status :: 3 - Alpha',

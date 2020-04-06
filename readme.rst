@@ -1,15 +1,14 @@
 
-…🐢⻳   TurtleConfig   ⻳🐢…
+⻳ TurtleConfig ⻳
 =============================
 
 *Why yes, it's turtles all the way down 🐢🐢🐢🐢…*
 
 This is an attempt at a cascading configuration library that I'd like to use.
-The basic idea is that you get a configuration object and read its properties for the
-values of options you've defined all over the place, haha.
+The basic idea is that you get a configuration object and read its properties
+for the values of options you've potentially defined all over the place, haha.
 
-Behind the scenes TurtleConfig will potentially look at command-line
-parameters,
+Behind the scenes TurtleConfig will look at command-line parameters,
 the environment,
 user configuration files,
 host/site configuration,
@@ -19,47 +18,57 @@ although you're welcome to modify that list of configuration sources to
 whatever you see fit.
 
 Instead of the typical hodge-podge of custom code needed for that,
-setting up "TC" looks a little something like this:
+setting up "TC" looks a little something like this.
+First, you'll define a schema via a standard Python object.
+Either imported from a module,
+or locally via a class/object,
+which is easier to view here:
 
 .. code-block:: python
 
     import os
     from tconf import TurtleConfig
 
-    # First, define your application schema/defaults:
-    import config as AppDefaults  # via module, or
+    import schema as AppSchema  # or…
 
-    # a class/object, which is easier to view here:
-    class AppDefaults:
+    class AppSchema:
         an_option = True  # simple options
 
         class main:  # or perhaps a hierarchy
             jpeg_quality = 95
             file_path = '/foo'
 
-    # Next, create a TurtleConfig object:
+
+Schema objects support type annotations and validation as well,
+but don't need to be given most of the time.
+
+Next, create the TurtleConfig object:
+
+.. code-block:: python
+
     cfg = TurtleConfig(
-        'AppyMcApp',    # the app's name
-        sources = (     # a list of option sources
+        'AppyMcApp',    # The app's name
+        sources = (     # A sequence of option sources
             os.environ,
-            '{user_config_dir}/options.ini',    # appdirs
-            '{site_config_dir}/options.ini',    # appdirs
+            '{user_config_dir}/options.ini',  # appdirs
+            '{site_config_dir}/options.ini',  # appdirs
             '/path/to/options.xml',  # or JSON, YAML, etc.
-            AppDefaults,                        # defaults
+            AppSchema,  # The schema/defaults object
         ),
         ensure_paths=True,  # creates folders/files when needed
     )
 
 **Virtual Paths**
 
-The ``user_config_dir`` & ``site_config_dir`` variables above are provided by
+Note,
+the ``user_config_dir`` & ``site_config_dir`` variables above are provided by
 the
 `appdirs <https://pypi.org/project/appdirs/>`_ module
 so you don't have to worry about cross platform locations—\
 unless you want to.
 
 Tip:  You may want to start logging at ``DEBUG`` level before loading TC,
-as it helps to visualize what is going on underneath its shell.
+as it helps to visualize what is going on inside its shell.
 The
 `out <https://pypi.org/project/out/>`_ module
 is perhaps the easiest way to do that:
@@ -73,14 +82,18 @@ is perhaps the easiest way to do that:
 Try It!
 --------
 
-First, install the tiny, pure-python package:
+First, install the small pure-python package, and off you go:
 
 .. code-block:: shell
 
     ⏵ python3 -m pip install tconf
 
-And off you go.
-There are two interfaces to get at options,
+
+Interfaces
+~~~~~~~~~~~~~~
+
+Once loaded,
+there are two interfaces to get at options,
 via attributes or dictionary-like access:
 
 .. code-block:: python
@@ -113,21 +126,20 @@ Value Types
 
 Some configuration sources are limited (in a good way)† in that they return
 option values only as strings.
-For example, the environment, strict yaml, and ``.ini`` files have string-only
+For example, the environment, strict-yaml, and ``.ini`` files have string-only
 values.
 However, our app is likely to need real types,
 such as integers, booleans, or lists of strings, etc.
 What to do?
 
 Under TC,
-the types of option values are assumed to be the same type as their default
-values,
-which are defined in Python.
+the types of option values are required to be the same type as their schema
+defaults,
+as defined in Python.
 Remember, defaults are found from the last class/module/object passed as a
 source,
-the ``AppDefaults``
+the ``AppSchema``
 object as seen in the example above.
-Think of your ``AppDefaults`` as a schema for configuration data.
 
 The default value types may be annotated,
 otherwise the given default will be inspected for its type as a fallback.
@@ -149,16 +161,18 @@ as they are inferred.
   - ``List, Tuple, Sequence, Dict, Set`` *(from le typing module)*
   - ``Union, Any, Optional, etc.`` *(ditto)*
 
-- Annotations become more useful with complex compound types defined with the
-  stdlib typing module.
+.. ~ foo
 
-- Compound types should be encoded in strings with Python syntax if you'd like
-  them decoded automatically.
-  Otherwise, pass them as strings and decode them yourself.
+- Annotations are required when complex, compound value types are needed,
+  as defined with the stdlib ``typing`` module.
 
-  - If you're using an already typed (via syntax) file format such as JSON,
-    don't do this,
-    rather spread the data structure out as normal.
+.. ~ - ? Compound types should be encoded in strings with Python syntax if you'd like
+  .. ~ them decoded automatically.
+  .. ~ Otherwise, pass them as strings and decode them yourself.
+
+  .. ~ - If you're using an already typed (via syntax) file format such as JSON,
+    .. ~ don't do this,
+    .. ~ rather spread the data structure out as normal.
 
 - Annotations may also support kwargs for an ArgumentParser, see below.
 
@@ -170,21 +184,25 @@ format to avoid unexpected edge-case bugs like
 Configuration Sources
 -----------------------
 
-Each configuration source has an Adapter class to integrate their various
-different interfaces into one.
+Each configuration source has an Adapter class to integrate the different
+interfaces into one.
 As mentioned,
 when looking for options,
-the sources are searched in order from front to back,
-top to bottom until a suitable value is found.
+the sources are searched in order from
+top to bottom,
+front to back,
+until a suitable value is found.
 If an option is not found in any source,
-an ``AttributeError`` or ``KeyError`` is raised to ensure bugs are found early.
+an ``AttributeError`` or ``KeyError``
+(depending on interface)
+is raised to ensure bugs are found early.
 
 
 Environment Variables
 ~~~~~~~~~~~~~~~~~~~~~~~
 
 Perhaps you'd like to override options with environment variables.
-This is what it will look like:
+This is what it looks like:
 
 .. code-block:: python
 
@@ -192,7 +210,8 @@ This is what it will look like:
     >>> cfg['main.jpeg_quality']
     94
 
-A matching environment variable is in uppercase and is prefixed with
+An environment variable matching one of our configuration values
+is uppercase and prefixed with
 ``PY_`` and the application name.
 Both parts of the prefix are able to be modified by modifying the app_name
 and/or passing an
@@ -205,14 +224,15 @@ Due to limits with how the environment adapter works,
 it cannot provide hierarchical access to settings via the attribute interface.
 
 The reason is that the attributes are evaluated left to right.
-The object doesn't yet have enough information to know if it should return the
+At access time,
+the object doesn't yet have enough information to know if it should return the
 final value or continue down the attribute chain.
-It can either do one or the other,
+It could decide on one or the other,
 leading to a number of broken cases from either decision.
 Bare attributes *do* work with the environment when options are kept to a
-single-level however.
-As mentioned,
-dictionary-style access works consistently on the other hand.
+single-level, however.
+As mentioned previously,
+dictionary-style access (shown above) works consistently.
 
 
 ConfigParser
@@ -223,7 +243,7 @@ Therefore they do work hierarchically by default and would typically require
 exactly two levels.
 
 There is one exception for convenience, however.
-If there is a single-level option name given,
+If a single-level option is requested,
 the section ``[main]`` (configurable also) is tried as a fallback.
 This is so one can use a single-level as well as a dual-level config with
 ConfigParser,
@@ -358,7 +378,8 @@ Tip: Additionally,
 passing adapters into the source list manually can also be used to give an
 Adapter different arguments than it would normally get.
 
-*"Use the source, Luke!"*
+See the next section for an example,
+and *"use the source, Luke!"*
 
 
 ArgumentParser
@@ -366,18 +387,18 @@ ArgumentParser
 
 You may have been thinking, what about the command-line?
 Good news,
-there's an ArgumentParser subclass available if you'd like all options
+there's an ArgumentParser subclass available if you'd like **all** options
 presented auto-magically.
 Types and parameters are passed to ArgumentParser through annotations of the
-``AppDefaults`` object:
+``AppSchema`` object:
 
 .. code-block:: python
 
     # appy.py
     from tconf import TurtleConfig, TurtleArgumentParser # 👀
 
-    class AppDefaults:
-        # ~snip~
+    class AppSchema:
+        # snip…
         class main:
             # how to add a type via annotation,
             # simple types are already detected however:
@@ -393,15 +414,14 @@ Types and parameters are passed to ArgumentParser through annotations of the
     tcfg = TurtleConfig(
         'AppyMcApp',
         sources = (
-            TurtleArgumentParser(AppDefaults),  # 👀
+            TurtleArgumentParser(AppSchema),  # 👀
             # environment, config files, etc…
-            AppDefaults,
+            AppSchema,
         ),
-        ensure_paths=True,
     )
 
 
-Give it a try:
+Next, give it a try:
 
 .. code-block:: shell
 
@@ -433,7 +453,7 @@ Options shown by an ArgumentParser can be hidden by passing the
 ``help=argparse.SUPPRESS``
 value via the kwargs annotation to the option.
 
-With enough options,
+Given enough options,
 eventually the display of every possible option is too much,
 and suppression gets tedious.
 When something simpler to be presented to the end user is preferred,
@@ -497,6 +517,16 @@ Option value errors, when the value returned is bogus:
 
 
 *Ob-la-di ob-la-da life goes on bra…*
+
+
+To Do:
+~~~~~~~~~~~~~~~
+
+Candidates for implementation:
+
+- TOML
+- ``.env`` files
+- Windows registry
 
 
 License
