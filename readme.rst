@@ -411,6 +411,11 @@ That may be passed as a source prior to the Schema:
         ),
     )
 
+Look into the
+`ast module <https://docs.python.org/3/library/ast.html#ast.literal_eval>`_
+if you'd like to pair the syntax of Python with a restricted middle-ground
+for security reasons.
+
 
 ArgumentParser
 ~~~~~~~~~~~~~~~~
@@ -497,6 +502,7 @@ this also works as you'd expect:
     parser.add_argument(
         '--quality', default=cfg['main.jpeg_quality'],
     )
+    args = parser.parse_args()
 
 Then, use ``args`` instead of ``cfg`` afterward for the options that take
 precedence.
@@ -555,6 +561,7 @@ To Do:
 Candidates for implementation:
 
 - TOML
+- Restricted Python via the ast module
 - ``.env`` files
 - Windows registry
 
