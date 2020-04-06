@@ -310,13 +310,16 @@ Requires
    ⏵ pip3 install xmltodict
 
    ⏵ cat test.xml
+
+.. code-block:: xml
+
     <?xml version="1.0" encoding="UTF-8"?>
     <root>
         <an_option>true</an_option>
         <a_null2/>
         <main>
             <jpeg_quality>96</jpeg_quality>
-    # ~snip~
+    <!-- ~snip~ -->
 
 .. code-block:: python
 
