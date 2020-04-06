@@ -8,7 +8,7 @@ from time import localtime as _localtime
 
 
 pkgname         = 'tconf'
-__version__     = version = '0.57'
+__version__     = version = '0.58'
 __author__      = authors = ', '.join([
                                 'Mike Miller',
                                 #~ 'and contributors',
