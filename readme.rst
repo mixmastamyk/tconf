@@ -385,12 +385,39 @@ See the next section for an example,
 and *"use the source, Luke!"*
 
 
+Programmable Config
+~~~~~~~~~~~~~~~~~~~~~
+
+This is available as well,
+and best for larger, complex projects
+without security concerns regarding user-submitted configuration.
+
+As alluded to above,
+a Python class, object, or module may be constructed on the fly,
+either fully or partially.
+That may be passed as a source prior to the Schema:
+
+.. code-block:: shell
+
+    import config  # or…
+    # from config import AppConfig
+
+    cfg = TurtleConfig(
+        # snip…
+        sources = (     # A sequence of option sources
+            config,
+            # AppConfig,
+            AppSchema,
+        ),
+    )
+
+
 ArgumentParser
 ~~~~~~~~~~~~~~~~
 
 You may have been thinking, what about the command-line?
 Good news,
-there's an ArgumentParser subclass available if you'd like **all** options
+there's an ArgumentParser subclass available if you'd like all options
 presented auto-magically.
 Types and parameters are passed to ArgumentParser through annotations of the
 ``AppSchema`` object:
