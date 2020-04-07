@@ -12,17 +12,15 @@ Behind the scenes TurtleConfig will look at command-line parameters,
 the environment,
 user configuration files,
 host/site configuration,
-and the app's own defaults to find the best value.
+and finally the app's own defaults to find the value.
 Typically in that order,
 although you're welcome to modify that list of configuration sources to
 whatever you see fit.
 
 Instead of the typical hodge-podge of custom code needed for that,
 setting up "TC" looks a little something like this.
-First, you'll define a schema via a standard Python object.
-Either imported from a module,
-or locally via a class/object,
-which is easier to view here:
+First, you'll define a "schema" via a standard Python object,
+which is easier than it sounds:
 
 .. code-block:: python
 
@@ -39,10 +37,19 @@ which is easier to view here:
             file_path = '/foo'
 
 
-Schema objects support type annotations and validation as well,
-but don't need to be given most of the time.
+A schema is merely an object that describes the configuration namespace and
+provide defaults.
+It can be a module, a class/object imported from a module,
+or a local class/object.
+Whatever makes the most sense for your project.
 
-Next, create the TurtleConfig object:
+As standard objects,
+they support Python type annotations (and validation as well).
+Thankfully,
+simple types are inferred so don't need to be given most of the time,
+preserving readability.
+
+Next, create the TurtleConfig object with required and optional parameters:
 
 .. code-block:: python
 
@@ -149,7 +156,7 @@ as they are inferred.
 **Points of interest:**
 
 - Turtle will attempt to convert or "coerce" string values gathered from a
-  config source into the expected (annotated or inferred) non-string type.
+  config source into an expected (annotated or inferred) non-string type.
 
 - Values are then type checked via the
   `typeguard <https://pypi.org/project/typeguard/>`_ module.
@@ -163,16 +170,16 @@ as they are inferred.
 
 .. ~ foo
 
-- Annotations are required when complex, compound value types are needed,
+- Annotations become necessary for validation when complex,
+  compound *value* types are needed,
   as defined with the stdlib ``typing`` module.
 
-.. ~ - ? Compound types should be encoded in strings with Python syntax if you'd like
-  .. ~ them decoded automatically.
-  .. ~ Otherwise, pass them as strings and decode them yourself.
+- Compound types may be encoded in strings with Python syntax.
+  Otherwise, pass them as strings and decode them yourself.
 
-  .. ~ - If you're using an already typed (via syntax) file format such as JSON,
-    .. ~ don't do this,
-    .. ~ rather spread the data structure out as normal.
+  - If you're using an already typed (via syntax) file format such as JSON,
+    it isn't necessary,
+    rather spread the data structure out as normal.
 
 - Annotations may also support kwargs for an ArgumentParser, see below.
 
@@ -184,7 +191,7 @@ format to avoid unexpected edge-case bugs like
 Configuration Sources
 -----------------------
 
-Each configuration source has an Adapter class to integrate the different
+Each configuration source has an Adapter class to integrate various different
 interfaces into one.
 As mentioned,
 when looking for options,
@@ -208,12 +215,13 @@ This is what it looks like:
 
     >>> os.environ['PY_APPYMCAPP.MAIN.JPEG_QUALITY'] = '94'
     >>> cfg['main.jpeg_quality']
-    94
+    94  # <-- int
 
-An environment variable matching one of our configuration values
+As shown above,
+an environment variable matching one of our configuration values
 is uppercase and prefixed with
 ``PY_`` and the application name.
-Both parts of the prefix are able to be modified by modifying the app_name
+Both parts of the prefix are able to be modified by modifying the ``app_name``
 and/or passing an
 ``env_prefix='…'`` to the ``TurtleConfig`` constructor.
 
@@ -221,7 +229,8 @@ and/or passing an
 **Limitations:**
 
 Due to limits with how the environment adapter works,
-it cannot provide hierarchical access to settings via the attribute interface.
+it cannot provide hierarchical access to settings via the attribute interface
+(i.e. ``cfg.main.jpeg_quality``).
 
 The reason is that the attributes are evaluated left to right.
 At access time,
@@ -294,8 +303,8 @@ but still relatively common as configuration:
     >>> cfg.an_option
     True
 
-Compound data types are better encoded in the JSON itself
-rather than trying to smash "PyON" into strings.
+.. ~ ?? Compound data types are better encoded in the JSON itself
+.. ~ rather than trying to smash "PyON" into strings.
 
 
 XML
@@ -486,7 +495,8 @@ The template is configurable as well via TurtleArgumentParser kwargs.
 
 Options shown by an ArgumentParser can be hidden by passing the
 ``help=argparse.SUPPRESS``
-value via the kwargs annotation to the option.
+value via the kwargs annotation to the option,
+under the schema object (see ``desc`` above).
 
 Given enough options,
 eventually the display of every possible option is too much,

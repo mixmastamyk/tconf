@@ -25,8 +25,21 @@ class DefaultsMissingError(RuntimeError):
 
 
 class TurtleConfig:
-    ''' A configuration object that retrieves parameters from a number of
-        sources, in the order given.
+    ''' A configuration object that retrieves option parameters from a number
+        of sources, in the order given.  First found wins.
+
+        Arguments:
+
+            app_name            A name for display and prefixes.
+            sources             A sequence of configuration sources.
+                                May be path strings, os.environ, modules,
+                                class, and/or Adapter objects.
+            ensure_paths        Touches config files, if they don't exist.
+            env_prefix          Set the environment prefix, defaults to "PY".
+            ini_default_section The section to default to for .ini files.
+            ini_interpolation   Whether to interpolate .ini files.
+            vendor_name         Passes a vendor name for use in paths
+                                constructed by the appdirs module.
     '''
     _env_prefix = 'PY'
 
@@ -215,7 +228,7 @@ class TurtleConfig:
             if folder_exists:
                 try:
                     if not exists(path_str):  # race
-                        open(path_str, 'a').close()
+                        open(path_str, 'a').close()  # do no harm
                 except OSError as err:
                     log.warn('unable to create file: %s', str(err))
 
@@ -241,8 +254,10 @@ class TurtleArgumentParser(ArgumentParser):
     ''' An ArgumentParser that is automatically populated by TurtleConfig.
 
         Arguments:
-            app_defaults:  a (class, module, object) containing data.
-            help_templ: a string such as: '🐢 {description} ({type_str})'
+            app_defaults    a (class, module, object) containing schema data.
+            help_templ      a string such as: '🐢 {description} ({type_str})'
+
+        Others arguments are passed to ArgumentParser.
     '''
     def __init__(self, app_defaults, *args, help_templ=None, **kwargs):
 
