@@ -27,9 +27,9 @@ which is easier than it sounds:
     import os
     from tconf import TurtleConfig
 
-    import schema as AppSchema  # or…
+    import schema as ConfigSchema  # or…
 
-    class AppSchema:
+    class ConfigSchema:
         an_option = True  # simple options
 
         class main:  # or perhaps a hierarchy
@@ -60,7 +60,7 @@ Next, create the TurtleConfig object with required and optional parameters:
             '{user_config_dir}/options.ini',  # appdirs
             '{site_config_dir}/options.ini',  # appdirs
             '/path/to/options.xml',  # or JSON, YAML, etc.
-            AppSchema,  # The schema/defaults object
+            ConfigSchema,  # The schema/defaults object
         ),
         ensure_paths=True,  # creates folders/files when needed
     )
@@ -83,7 +83,8 @@ is perhaps the easiest way to do that:
 .. code-block:: python
 
     import sys, out
-    out.configure(level='debug' if '-d' in sys.argv else 'info')
+    out.configure(level='debug' if '-d' in sys.argv else 'info')  # or…
+    # out.configure(level='debug' if args.verbose else 'info')  # argparse
 
 
 Try It!
@@ -145,7 +146,7 @@ defaults,
 as defined in Python.
 Remember, defaults are found from the last class/module/object passed as a
 source,
-the ``AppSchema``
+the ``ConfigSchema``
 object as seen in the example above.
 
 The default value types may be annotated,
@@ -416,7 +417,7 @@ That may be passed as a source prior to the Schema:
         sources = (     # A sequence of option sources
             config,
             # AppConfig,
-            AppSchema,
+            ConfigSchema,
         ),
     )
 
@@ -434,14 +435,14 @@ Good news,
 there's an ArgumentParser subclass available if you'd like all options
 presented auto-magically.
 Types and parameters are passed to ArgumentParser through annotations of the
-``AppSchema`` object:
+``ConfigSchema`` object:
 
 .. code-block:: python
 
     # appy.py
     from tconf import TurtleConfig, TurtleArgumentParser # 👀
 
-    class AppSchema:
+    class ConfigSchema:
         # snip…
         class main:
             # how to add a type via annotation,
@@ -458,9 +459,9 @@ Types and parameters are passed to ArgumentParser through annotations of the
     tcfg = TurtleConfig(
         'AppyMcApp',
         sources = (
-            TurtleArgumentParser(AppSchema),  # 👀
+            TurtleArgumentParser(ConfigSchema),  # 👀
             # environment, config files, etc…
-            AppSchema,
+            ConfigSchema,
         ),
     )
 
@@ -580,5 +581,3 @@ License
 ~~~~~~~~~~~~~~~
 
 Released under the LGPL, version 3+.
-
-

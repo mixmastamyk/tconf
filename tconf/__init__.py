@@ -214,11 +214,11 @@ class TurtleConfig:
         if ensure_paths:
             folder_exists = None  # these are separate, to create relative file
             folder = dirname(path_str)
+            log.debug('ensuring %r', folder)
             # avoid attempt to create own folder:
             if folder in ('', '.'):  # current dir
                 folder_exists = True
             else:
-                log.debug('ensuring %r', path_str)
                 try:
                     os.makedirs(folder, exist_ok=True)
                     folder_exists = True
@@ -226,6 +226,7 @@ class TurtleConfig:
                     log.warn('unable to create path: %s', str(err))
 
             if folder_exists:
+                log.debug('ensuring %r', path_str)
                 try:
                     if not exists(path_str):  # race
                         open(path_str, 'a').close()  # do no harm
